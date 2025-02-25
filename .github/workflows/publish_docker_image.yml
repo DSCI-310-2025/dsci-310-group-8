@@ -25,7 +25,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: michaeltham/dsci310-ia3-miketham24-docker
+          images: zx2yizzy/dsci-310-group-8-project-docker
           tags: |
             type=raw, value={{sha}},enable=${{github.ref_type != 'tag' }}
             type=raw, value=latest
