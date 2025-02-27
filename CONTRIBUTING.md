@@ -1,4 +1,4 @@
-Contributing to [Project Name]
+Contributing to U.S. Adult Census: Income Prediction with Logistic Regression
 
 Thank you for your interest in contributing! We welcome all contributions, whether it’s reporting issues, suggesting features, or submitting code improvements.
 
@@ -35,4 +35,8 @@ Contributing Code
 
 For help, open an issue on GitHub.
 
-We appreciate your contributions—thank you for helping improve [Project Name]!
+We appreciate your contributions—thank you for helping improve our project, U.S. Adult Census Income Prediction with Logistic Regression!
+
+We will review pull requests within 7 days.
+
+All contributors must abide by our CODE_OF_CONDUCT.md.
