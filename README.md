@@ -13,6 +13,7 @@ This project aims to investigate income prediction using the UCI Adult Dataset, 
 
 Some tools we will use are the R programming language for data loading, wrangling, cleaning, and analysis as well as Docker to containerize our environments. Furthermore, we will use a plethora of R packages such as tidyverse, broom, and repr.
 
+<!-- TODO: Change the following steps to use the Rscripts, Makefile, updated Dockerfile, qmd etc.--> 
 # How to Run the Analysis  
 To reproduce the analysis, follow these steps:  
 
