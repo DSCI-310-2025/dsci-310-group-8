@@ -42,6 +42,7 @@ Usage:
 ")
 
 data <- read.csv(doc$input)
+<<<<<<< HEAD
 
 data$age <- as.numeric(data$age)
 
@@ -56,3 +57,7 @@ ggplot(data, aes(x = age, fill = income)) +
 ggsave(doc$output)
 
 message("EDA completed successfully.")
+=======
+ggplot(data, aes(x = age, fill = income)) + geom_histogram(bins = 30) + ggsave(doc$output)
+message("EDA completed successfully.")
+>>>>>>> 5c291ce (Moved R files into source folder)

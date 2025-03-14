@@ -2,18 +2,17 @@
 Script to clean and preprocess the dataset.
 Usage:
   02-clean_data.R --input=<input> --output=<output>
-
+=======
+"
 Options:
   --input=<input>   Path to raw dataset.
   --output=<output> Path to save cleaned dataset.
-"
 
 library(docopt)
 library(dplyr)
 library(readr)
 
 doc <- docopt("
-Usage:
   02-clean_data.R --input=<input> --output=<output>
 ")
 
