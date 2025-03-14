@@ -18,3 +18,321 @@ execute:
     warning: false
 editor: source
 ---
+
+<b>Prepared for DSCI 310 by Group 8:</b>
+- Benjamin Gerochi
+- Izzy Zhou
+- Michael Tham
+- Yui Mikuriya
+
+
+## (1) Summary
+
+This report investigates income prediction using the [UCI Adult Dataset](https://archive.ics.uci.edu/dataset/2/adult)[@kohavi1996], which compiles demographic and income data from the 1994 U.S. Census. The primary objective is to predict whether an individual earns over $50,000 annually using factors such as age, education level, and hours worked per week. By employing a logistic regression model, the analysis effectively predicted income levels on test cases while assessing model performance using metrics like the ROC curve (AUC ≈ 0.79), sensitivity, specificity, and accuracy. The findings underscore that while the model achieves robust overall accuracy, there are challenges with false positives that warrant further refinement.
+
+The insights derived from this study not only validate the role of education and work intensity in income determination but also suggest avenues for future research, such as integrating geographic and intersectional demographic variables to capture the complexities of income disparities. Overall, the analysis offers a comprehensive approach to understanding income inequality and provides actionable information for policy makers and individuals aiming to navigate economic opportunities.
+
+## (2) Introduction
+### Dataset Overview
+
+The dataset selected for this project is the [UCI Adult Dataset](https://archive.ics.uci.edu/dataset/2/adult)[@kohavi1996], available through the [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml)[@uci_machine_learning_repository]. It contains demographic and income data collected by the **U.S. Census Bureau** and is widely used for predicting whether an individual’s income exceeds **$50,000 per year** based on various demographic factors.
+
+### Dataset Details:
+- **Dataset Name**: [UCI Adult Dataset](https://archive.ics.uci.edu/dataset/2/adult)[@kohavi1996]
+- **Source**: 1994 U.S. Census database, compiled by Ronny Kohavi and Barry Becker  
+- **Total Observations**: 32,561 
+- **Total Variables**: 15
+
+
+### Variables and Their Types
+
+
+| Variable Index | Variable Name       | Type      | Description |
+|----------------|---------------------|-----------|-------------|
+| 0              | age                 | continuous       | Age of the individual |
+| 1              | workclass           | categorical    | Employment sector (e.g., Private, Self-emp-not-inc, State-gov) |
+| 2              | fnlwgt              | continuous       | Final weight, representing the number of people the observation represents in the population |
+| 3              | education           | categorical    | Highest level of education attained |
+| 4              | education-num       | continuous       | Numerical representation of education level |
+| 5              | marital-status      | categorical    | Marital status (e.g., Never-married, Married-civ-spouse) |
+| 6              | occupation          | categorical    | Type of occupation (e.g., Adm-clerical, Exec-managerial) |
+| 7              | relationship        | categorical    | Relationship of the individual to the household (e.g., Husband, Not-in-family) |
+| 8              | race                | categorical    | Race of the individual (e.g., White, Black) |
+| 9              | sex                 | categorical    | Gender (Male/Female) |
+| 10             | capital-gain        | continuous       | Capital gains earned |
+| 11             | capital-loss        | continuous       | Capital losses incurred |
+| 12             | hours-per-week      | continuous       | Average hours worked per week |
+| 13             | native-country      | categorical    | Country of origin |
+| 14             | income              | categorical    | Income level (<=50K, >50K) |
+
+#### Table 2.1: Description of U.S. Census Adult Dataset Variables
+
+<!-- ### Descriptive Statistics
+
+- **Age**: Ranges from 17 to 90, with an average age of 38.6 years.
+- **Education-num**: Has values from 1 to 16, representing various education levels.
+- **Capital-gain**: Ranges from 0 to 99,999, with most values concentrated around zero, indicating that high capital gains are rare.
+- **Capital-loss**: Similar to capital gain, most values are zero.
+- **Hours-per-week**: Has a mean of 40.4 hours, aligning with typical full-time work expectations.
+- **Income**: Target variable, classified into two categories: <=50K and >50K. -->
+
+This [dataset](https://archive.ics.uci.edu/dataset/2/adult) includes both **categorical** and **numerical** variables, making it suitable for analyzing relationships between **demographic attributes** and **income levels**. Further **exploration and preprocessing** may involve handling **missing values** and **encoding categorical features**.  
+
+### Research Question  
+**How accurately can key demographic factors predict whether an individual's annual income exceeds $50,000?**  
+
+This study aims to use demographic variables to predict income levels without pre-assuming key predictors. Our team initially analyzed different aspects of the dataset before deciding to focus on demographic influences on income such as age, education, and hours worked.  
+
+### Literature Context  
+Prior research supports the importance of demographic factors in income prediction. Jo [@jo2023] analyzed the **Adult dataset** and identified **capital gain, education, relationship status, and occupation** as key predictors. Similarly, Azzollini et al. [@azzollini2023] found that demographic differences explained **40% of income inequality** across OECD countries, reinforcing the relevance of our analysis.  
+
+### **Objective**
+
+To develop and evaluate a predictive model that estimates the probability of an individual earning more than $50,000 annually based on their demographic characteristics:
+
+- **Prediction:** Build a robust model to forecast whether an individual's annual income will exceed $50,000.
+- **Model Evaluation:** Assess model performance to ensure that the model provides reliable predictions.
+
+## (3) Methods & Results
+
+### Loading the Required Libraries and Dataset
+We will start by importing the necessary R libraries for data analysis and preprocessing.
+
+```{r}
+#| vscode: {languageId: r}
+install.packages(c("broom", "repr", "infer", "gridExtra", "faraway",  
+                   "mltools", "leaps", "glmnet", "cowplot", "modelr",  
+                   "tidyverse", "ggplot2", "dplyr", "GGally", "patchwork", "knitr", "pROC"))
+
+library(broom)
+library(repr)
+library(infer)
+library(gridExtra)
+library(faraway)
+library(mltools)
+library(leaps)
+library(glmnet)
+library(cowplot)
+library(modelr)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(GGally)
+library(patchwork)
+library(knitr)
+library(pROC)
+```
+
+We then load the dataset into R by referencing the downloaded file path.
+
+```{r}
+#| label:tbl-raw-adult-dataset
+#| tbl-cap: Raw Adult Income Dataset 
+#| echo: false
+income <- read_csv("../data/raw/adult-raw.csv")
+knitr::kable(income)
+```
+
+
+### Data Wrangling
+
+We will begin by removing missing values from the @tbl-raw-adult-dataset. Additionally, we will convert the income column into a factor variable to ensure R treats it as a categorical variable. This transformation is crucial for statistical modeling and visualization, especially when income is used as a binary outcome in logistic regression.
+
+```{r}
+#| label: tbl-cleaned-adult-dataset
+#| tbl-cap: Cleaned Adult Income Dataset 
+#| echo: false
+income_clean <- read_csv("../data/clean/adult-cleaned.csv")
+knitr::kable(income_clean)
+```
+
+
+After removing missing values from the @tbl-cleaned-adult-dataset, we randomly sample 10% of the data (which contains a total of 32,561 observations) for efficiency. The sample is then split into training and testing sets (80-20 split) for prediction analysis.
+
+```{r}
+#| label: tbl-training-adult-dataset
+#| tbl-cap: Training Set of Adult Dataset
+#| echo: false
+income_training <- read_csv("../data/clean/adult-training.csv")
+knitr::kable(income_training)
+```
+
+
+Above, we can see that the @tbl-cleaned-adult-dataset has been successfully split, with our @tbl-training-adult-dataset representing 80% of the data points.
+
+### Exploratory Data Analysis and Visualization
+
+#### Dropping Variables:
+
+To focus on the most relevant variables, we will exclude columns that do not directly contribute to addressing our research question. Hence, we have retained demographic predictors such as age, education level, and hours worked per week. These predictors were chosen based on prior literature [@azzollini2023, @smithedgell2024], theoretical considerations, and empirical evidence from exploratory analyses, which indicate that they have a significant influence on income levels.
+
+```{r}
+#| label: tbl-final-training-adult-dataset
+#| tbl-cap: Final Training Set with Relevant Variables
+#| echo: false
+income_training_final <- read_csv("../data/clean/final-adult-training.csv")
+knitr::kable(income_training_final)
+```
+
+
+Using our @tbl-final-training-adult-dataset, we create pairwise plots to examine relationships between continuous variables (`age`, `hours_per_week`, `education_num`) and the response variable, as well as associations among the input variables.
+
+![Pairwise Plot of Response and Predictors](../results/eda/pairwise-plot.png){#fig-pairwise-plot}
+
+
+The @fig-pairwise-plot show that `age` is right-skewed, `hours_per_week` peaks around 40, and `education_num` has a bimodal distribution. Weak correlations (< 0.6) suggest minimal multicollinearity.
+
+The following code generates summary tables for continuous variables, with the code computing key summary statistics: mean, standard deviation, median, variance, maximum, and minimum. 
+
+```{r}
+#| label: tbl-summary-statistics
+#| tbl-cap: Summary Statistics Table of Relevant Predictors
+#| echo: false
+summary_statistics_table <- read_csv("../results/eda/summary-statistics.csv")
+knitr::kable(summary_statistics_table)
+```
+
+
+The @tbl-summary-statistics show that the average `age` is 38 years (SD = 13.39) with a range of 17 to 90. The average education level (`education_num`) is 10 years (SD = 2.55), reflecting high school or some college education. For `hours_per_week`, the average is 40.85 hours (SD = 11.96), with a maximum of 99 hours, indicating some individuals work significantly long hours.
+
+### Proposed Method: Logistic Regression for Prediction and ROC Curve for Model Evaluation
+
+Why is Logistic Regression Appropriate?
+
+Logistic regression is suitable for modeling binary outcomes like income categories (<=50K and >50K). It estimates the probability of an individual falling into a specific category based on predictors, then classifies the predictions based on a threshold. 
+
+#### Assumptions:
+1. Independence of observations.
+2. No high correlation among predictors.
+3. A large enough sample size for reliable estimates.
+
+#### Limitations:
+1. Potential underfitting if too little predictors are included.
+
+### Fit the Logistic Regression Model
+In the following code, we fit the logistic regression model to the training sample using the relevant predictors. 
+
+```{r}
+#| label: tbl-logreg-summary
+#| tbl-cap: Summary of the Logistic Regression Model
+#| echo: false
+tidy_logreg <- broom::tidy(log_reg_model)
+knitr::kable(tidy_logreg)
+```
+
+We can observe from the @tbl-logreg-summary that all predictors were deemed significant (based on the p-values). Furthermore, education number seemed to have the highest coefficient, demonstrating the greatest impact on model predictions.
+
+### Visualizing the ROC Curve
+To evaluate the model, we will use the ROC curve to visualize the trade-off between sensitivity and specificity across classification thresholds. The AUC (Area Under the Curve) will be calculated to quantify model performance, with values closer to 1 indicating strong discrimination and values near 0.5 suggesting random guessing.
+
+![ROC Curve of the Logistic Regression Model](../results/model/roc-curve.png){#fig-roc-curve}
+
+The @fig-roc-curve shows us that the AUC (Area Under the Curve) values obtained for the model `{r} auc_value` is significantly above 0.5, indicating that the model perform much better than random guessing. The high AUC value suggests that the model has strong discriminatory power, effectively distinguishing between individuals earning `<=50K` and `>50K` based on the selected predictors. 
+
+### Test the Model on the Testing Dataset
+Now, we perform the classification analysis and apply the model to the testing dataset (test_data). 
+
+```{r}
+#| vscode: {languageId: r}
+test_pred_probs <- predict(full_model, newdata = test_data[, c("age", "hours_per_week", "education_num")], type = "response")
+test_pred_class <- ifelse(test_pred_probs > 0.5, ">50K", "<=50K")
+```
+
+We then visualize the results of the analysis in a confusion matrix.
+
+```{r}
+#| vscode: {languageId: r}
+confusion_matrix <- table(Predicted = test_pred_class, Actual = test_data$income)
+
+conf_mat_df <- as.data.frame(confusion_matrix)
+colnames(conf_mat_df) <- c("Actual", "Predicted", "Freq")
+
+ggplot(conf_mat_df, aes(x = Predicted, y = Actual, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 6) +
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Confusion Matrix",
+    x = "Predicted Class",
+    y = "Actual Class"
+  )
+```
+
+#### Figure 3.3: Confusion Matrix of Full Model on Testing Set
+
+### Classification Results and Model Metrics
+
+- **True Positives (TP):** 40 predicted >50K correctly.
+- **True Negatives (TN):** 428 predicted <=50K correctly.
+- **False Positives (FP):** 110 predicted >50K incorrectly.
+- **False Negatives (FN):** 26 predicted <=50K incorrectly.
+
+```{r}
+#| vscode: {languageId: r}
+# Confusion matrix values
+TP <- 40  # True Positives
+TN <- 428  # True Negatives
+FP <- 110  # False Positives
+FN <- 26  # False Negatives
+n <- TP + TN + FP + FN  # Total observations
+
+# Sensitivity (SN)
+sensitivity <- TP / (TP + FN)
+
+# Specificity (SP)
+specificity <- TN / (TN + FP)
+
+# Precision (PR)
+precision <- TP / (TP + FP)
+
+# Accuracy (ACC)
+accuracy <- (TP + TN) / n
+
+# Cohen's Kappa (κ)
+observed_accuracy <- (TP + TN) / n
+expected_accuracy <- ((TP + FP) / n) * ((TP + FN) / n) + ((TN + FP) / n) * ((TN + FN) / n)
+kappa <- (observed_accuracy - expected_accuracy) / (1 - expected_accuracy)
+
+metrics_df <- data.frame(
+  Metric = c("Sensitivity", "Specificity", "Precision", "Accuracy", "Cohen's Kappa"),
+  Value  = c(sensitivity, specificity, precision, accuracy, kappa)
+)
+
+metrics_df
+```
+
+#### Table 3.7: Summary of Model Evaluation Metrics
+
+1. **Sensitivity (SN): 0.61** - The model correctly identifies 61% of higher-income individuals.
+2. **Specificity (SP): 0.80** - 80% of lower-income individuals are correctly classified.
+3. **Precision (PR): 0.27** - 27% of predicted >50K individuals actually earn >50K, indicating many false positives.
+4. **Accuracy (ACC): 0.77** - 77% of overall predictions are correct.
+5. **Cohen's Kappa (κ): 0.26** - Moderate agreement, better than random chance but room for improvement.
+
+### Interpretation
+- Strong specificity, but moderate sensitivity and low precision suggest improvements in identifying high-income individuals.
+- High accuracy reflects solid overall performance but overlooks class imbalance.
+- Moderate Cohen's Kappa indicates the need for refinement to improve consistency.
+
+## (4) Discussion
+#### Summary of Findings and Implications
+
+- The logistic regression model showed strong predictive power (AUC = 0.7965), demonstrating that the model can effectively distinguish income levels better than a baseline.
+- These findings can inform policies aimed at reducing income inequality. Education and hours worked were key predictors, emphasizing the need for skill development and work-life balance.
+- Understanding the factors behind income disparities can help individuals make more informed career decisions and pursue opportunities for skill enhancement.
+
+#### Expectations and Results
+
+- The model’s AUC (0.7965) is strong, reflecting the importance of predictors like age, education, and hours worked. Overall, the results are consistent with expectations from the research study:
+  - **Age** correlates with experience, leading to higher salaries.
+  - **Education** increases income, with those holding a degree earning significantly more.
+  - **Hours Worked** reflects labor input, where more hours can translate to higher pay.
+
+#### Future Research
+
+- **Geographic Influence on Income:** Including geographic variables may reveal regional disparities in income linked to education and job opportunities.
+- **Intersectionality of Demographics:** Exploring how race, gender, and marital status interact could improve the model's accuracy in predicting income.
+- **Health and Disability Status:** Accounting for health conditions or disability could provide additional insight into income disparities by limiting education or work opportunities.
+
+## (5) References

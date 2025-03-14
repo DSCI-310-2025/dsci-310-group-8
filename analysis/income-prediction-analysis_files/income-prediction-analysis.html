@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Title: U.S. Adult Census: Income Prediction with Logistic Regression</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="income-prediction-analysis_files/libs/clipboard/clipboard.min.js"></script>
+<script src="income-prediction-analysis_files/libs/quarto-html/quarto.js"></script>
+<script src="income-prediction-analysis_files/libs/quarto-html/popper.min.js"></script>
+<script src="income-prediction-analysis_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="income-prediction-analysis_files/libs/quarto-html/anchor.min.js"></script>
+<link href="income-prediction-analysis_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="income-prediction-analysis_files/libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="income-prediction-analysis_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="income-prediction-analysis_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="income-prediction-analysis_files/libs/bootstrap/bootstrap-973236bd072d72a04ee9cd82dcc9cb29.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Title: U.S. Adult Census: Income Prediction with Logistic Regression</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><b>Prepared for DSCI 310 by Group 8:</b> - Benjamin Gerochi - Izzy Zhou - Michael Tham - Yui Mikuriya</p>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">(1) Summary</h2>
+<p>This report investigates income prediction using the UCI Adult Dataset, which compiles demographic and income data from the 1994 U.S. Census. The primary objective is to predict whether an individual earns over $50,000 annually using factors such as age, education level, and hours worked per week. By employing a logistic regression model, the analysis effectively predicted income levels on test cases while assessing model performance using metrics like the ROC curve (AUC ≈ 0.79), sensitivity, specificity, and accuracy. The findings underscore that while the model achieves robust overall accuracy, there are challenges with false positives that warrant further refinement.</p>
+<p>The insights derived from this study not only validate the role of education and work intensity in income determination but also suggest avenues for future research, such as integrating geographic and intersectional demographic variables to capture the complexities of income disparities. Overall, the analysis offers a comprehensive approach to understanding income inequality and provides actionable information for policy makers and individuals aiming to navigate economic opportunities.</p>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">(2) Introduction</h2>
+</section>
+<section id="dataset-overview" class="level2">
+<h2 class="anchored" data-anchor-id="dataset-overview">Dataset Overview</h2>
+<p>The dataset selected for this project is the <strong>Adult Dataset</strong> (Kohavi &amp; Becker, 1996), available through the <strong>UCI Machine Learning Repository</strong>. It contains demographic and income data collected by the <strong>U.S. Census Bureau</strong> and is widely used for predicting whether an individual’s income exceeds <strong>$50,000 per year</strong> based on various demographic factors.</p>
+<section id="dataset-details" class="level3">
+<h3 class="anchored" data-anchor-id="dataset-details">Dataset Details:</h3>
+<ul>
+<li><strong>Dataset Name</strong>: UC Irvine Adult Dataset<br>
+</li>
+<li><strong>Source</strong>: 1994 U.S. Census database, compiled by Ronny Kohavi and Barry Becker
+<ul>
+<li><a href="https://archive.ics.uci.edu/ml/datasets/adult">Access the dataset here</a><br>
+</li>
+</ul></li>
+<li><strong>Total Observations</strong>: 32,561<br>
+</li>
+<li><strong>Total Variables</strong>: 15</li>
+</ul>
+</section>
+<section id="variables-and-their-types" class="level3">
+<h3 class="anchored" data-anchor-id="variables-and-their-types">Variables and Their Types</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 34%">
+<col style="width: 18%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable Index</th>
+<th>Variable Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>age</td>
+<td>continuous</td>
+<td>Age of the individual</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>workclass</td>
+<td>categorical</td>
+<td>Employment sector (e.g., Private, Self-emp-not-inc, State-gov)</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>fnlwgt</td>
+<td>continuous</td>
+<td>Final weight, representing the number of people the observation represents in the population</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>education</td>
+<td>categorical</td>
+<td>Highest level of education attained</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>education-num</td>
+<td>continuous</td>
+<td>Numerical representation of education level</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>marital-status</td>
+<td>categorical</td>
+<td>Marital status (e.g., Never-married, Married-civ-spouse)</td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>occupation</td>
+<td>categorical</td>
+<td>Type of occupation (e.g., Adm-clerical, Exec-managerial)</td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td>relationship</td>
+<td>categorical</td>
+<td>Relationship of the individual to the household (e.g., Husband, Not-in-family)</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>race</td>
+<td>categorical</td>
+<td>Race of the individual (e.g., White, Black)</td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td>sex</td>
+<td>categorical</td>
+<td>Gender (Male/Female)</td>
+</tr>
+<tr class="odd">
+<td>10</td>
+<td>capital-gain</td>
+<td>continuous</td>
+<td>Capital gains earned</td>
+</tr>
+<tr class="even">
+<td>11</td>
+<td>capital-loss</td>
+<td>continuous</td>
+<td>Capital losses incurred</td>
+</tr>
+<tr class="odd">
+<td>12</td>
+<td>hours-per-week</td>
+<td>continuous</td>
+<td>Average hours worked per week</td>
+</tr>
+<tr class="even">
+<td>13</td>
+<td>native-country</td>
+<td>categorical</td>
+<td>Country of origin</td>
+</tr>
+<tr class="odd">
+<td>14</td>
+<td>income</td>
+<td>categorical</td>
+<td>Income level (&lt;=50K, &gt;50K)</td>
+</tr>
+</tbody>
+</table>
+<section id="table-2.1-description-of-u.s.-census-adult-dataset-variables" class="level4">
+<h4 class="anchored" data-anchor-id="table-2.1-description-of-u.s.-census-adult-dataset-variables">Table 2.1: Description of U.S. Census Adult Dataset Variables</h4>
+<!-- ### Descriptive Statistics
+
+- **Age**: Ranges from 17 to 90, with an average age of 38.6 years.
+- **Education-num**: Has values from 1 to 16, representing various education levels.
+- **Capital-gain**: Ranges from 0 to 99,999, with most values concentrated around zero, indicating that high capital gains are rare.
+- **Capital-loss**: Similar to capital gain, most values are zero.
+- **Hours-per-week**: Has a mean of 40.4 hours, aligning with typical full-time work expectations.
+- **Income**: Target variable, classified into two categories: <=50K and >50K. -->
+<p>This dataset includes both <strong>categorical</strong> and <strong>numerical</strong> variables, making it suitable for analyzing relationships between <strong>demographic attributes</strong> and <strong>income levels</strong>. Further <strong>exploration and preprocessing</strong> may involve handling <strong>missing values</strong> and <strong>encoding categorical features</strong>.</p>
+</section>
+</section>
+<section id="research-question" class="level3">
+<h3 class="anchored" data-anchor-id="research-question">Research Question</h3>
+<p><strong>How accurately can key demographic factors predict whether an individual’s annual income exceeds $50,000?</strong></p>
+<p>This study aims to use demographic variables to predict income levels without pre-assuming key predictors. Our team initially analyzed different aspects of the dataset before deciding to focus on demographic influences on income such as age, education, and hours worked.</p>
+</section>
+<section id="literature-context" class="level3">
+<h3 class="anchored" data-anchor-id="literature-context">Literature Context</h3>
+<p>Prior research supports the importance of demographic factors in income prediction. Jo (2023) analyzed the <strong>Adult dataset</strong> and identified <strong>capital gain, education, relationship status, and occupation</strong> as key predictors. Similarly, Azzollini et al.&nbsp;(2023) found that demographic differences explained <strong>40% of income inequality</strong> across OECD countries, reinforcing the relevance of our analysis.</p>
+</section>
+<section id="objective" class="level3">
+<h3 class="anchored" data-anchor-id="objective"><strong>Objective</strong></h3>
+<p>To develop and evaluate a predictive model that estimates the probability of an individual earning more than $50,000 annually based on their demographic characteristics:</p>
+<ul>
+<li><strong>Prediction:</strong> Build a robust model to forecast whether an individual’s annual income will exceed $50,000.</li>
+<li><strong>Model Evaluation:</strong> Assess model performance to ensure that the model provides reliable predictions.</li>
+</ul>
+</section>
+</section>
+<section id="methods-results" class="level2">
+<h2 class="anchored" data-anchor-id="methods-results">(3) Methods &amp; Results</h2>
+<section id="loading-the-required-libraries-and-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="loading-the-required-libraries-and-dataset">Loading the Required Libraries and Dataset</h3>
+<p>We will start by importing the necessary R libraries for data analysis and preprocessing.</p>
+<div id="d97c76ea" class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">"broom"</span>, <span class="st">"repr"</span>, <span class="st">"infer"</span>, <span class="st">"gridExtra"</span>, <span class="st">"faraway"</span>,  </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"mltools"</span>, <span class="st">"leaps"</span>, <span class="st">"glmnet"</span>, <span class="st">"cowplot"</span>, <span class="st">"modelr"</span>,  </span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"tidyverse"</span>, <span class="st">"ggplot2"</span>, <span class="st">"dplyr"</span>, <span class="st">"GGally"</span>, <span class="st">"patchwork"</span>, <span class="st">"knitr"</span>, <span class="st">"pROC"</span>))</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(repr)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(infer)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(faraway)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mltools)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(leaps)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glmnet)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(modelr)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(GGally)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pROC)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+The downloaded binary packages are in
+    /var/folders/cy/0h9sxbhx0l74hn41rbhx2kzc0000gn/T//RtmpE5a6iN/downloaded_packages</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: Matrix
+
+Loaded glmnet 4.1-8
+
+
+Attaching package: ‘modelr’
+
+
+The following objects are masked from ‘package:mltools’:
+
+    mse, rmse
+
+
+The following object is masked from ‘package:broom’:
+
+    bootstrap
+
+
+── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.5.1     ✔ tibble    3.2.1
+✔ lubridate 1.9.4     ✔ tidyr     1.3.1
+✔ purrr     1.0.4     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ modelr::bootstrap() masks broom::bootstrap()
+✖ dplyr::combine()    masks gridExtra::combine()
+✖ tidyr::expand()     masks Matrix::expand()
+✖ dplyr::filter()     masks stats::filter()
+✖ dplyr::lag()        masks stats::lag()
+✖ modelr::mse()       masks mltools::mse()
+✖ tidyr::pack()       masks Matrix::pack()
+✖ tidyr::replace_na() masks mltools::replace_na()
+✖ modelr::rmse()      masks mltools::rmse()
+✖ lubridate::stamp()  masks cowplot::stamp()
+✖ tidyr::unpack()     masks Matrix::unpack()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
+Registered S3 method overwritten by 'GGally':
+  method from   
+  +.gg   ggplot2
+
+
+Attaching package: ‘GGally’
+
+
+The following object is masked from ‘package:faraway’:
+
+    happy
+
+
+
+Attaching package: ‘patchwork’
+
+
+The following object is masked from ‘package:cowplot’:
+
+    align_plots
+
+
+Type 'citation("pROC")' for a citation.
+
+
+Attaching package: ‘pROC’
+
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+</code></pre>
+</div>
+</div>
+<p>We then load the dataset into R by referencing the downloaded file path.</p>
+<div id="68b75453" class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>raw_data_dir <span class="ot">&lt;-</span> <span class="st">"data/raw"</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>file_name <span class="ot">&lt;-</span> <span class="st">"adult.data"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>file_path <span class="ot">&lt;-</span> <span class="fu">file.path</span>(raw_data_dir, file_name)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="st">"https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(raw_data_dir)) {</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dir.create</span>(raw_data_dir, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(file_path)) {</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">download.file</span>(url, file_path, <span class="at">method =</span> <span class="st">"curl"</span>)  <span class="co"># 'curl' method works on most systems</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>income <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(file_path, </span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>                   <span class="at">col_names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>                   <span class="at">na =</span> <span class="st">"?"</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(income) <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">"age"</span>, <span class="st">"workclass"</span>, <span class="st">"fnlwgt"</span>, <span class="st">"education"</span>, <span class="st">"education_num"</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">"marital_status"</span>, <span class="st">"occupation"</span>, <span class="st">"relationship"</span>, <span class="st">"race"</span>,</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sex"</span>, <span class="st">"capital_gain"</span>, <span class="st">"capital_loss"</span>, <span class="st">"hours_per_week"</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"native_country"</span>, <span class="st">"income"</span>)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(income)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 32561 Columns: 15
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (9): X2, X4, X6, X7, X8, X9, X10, X14, X15
+dbl (6): X1, X3, X5, X11, X12, X13
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>A tibble: 6 × 15</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" scope="col">age</th>
+<th data-quarto-table-cell-role="th" scope="col">workclass</th>
+<th data-quarto-table-cell-role="th" scope="col">fnlwgt</th>
+<th data-quarto-table-cell-role="th" scope="col">education</th>
+<th data-quarto-table-cell-role="th" scope="col">education_num</th>
+<th data-quarto-table-cell-role="th" scope="col">marital_status</th>
+<th data-quarto-table-cell-role="th" scope="col">occupation</th>
+<th data-quarto-table-cell-role="th" scope="col">relationship</th>
+<th data-quarto-table-cell-role="th" scope="col">race</th>
+<th data-quarto-table-cell-role="th" scope="col">sex</th>
+<th data-quarto-table-cell-role="th" scope="col">capital_gain</th>
+<th data-quarto-table-cell-role="th" scope="col">capital_loss</th>
+<th data-quarto-table-cell-role="th" scope="col">hours_per_week</th>
+<th data-quarto-table-cell-role="th" scope="col">native_country</th>
+<th data-quarto-table-cell-role="th" scope="col">income</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>39</td>
+<td><span style="white-space:pre-wrap">State-gov </span></td>
+<td>77516</td>
+<td>Bachelors</td>
+<td>13</td>
+<td><span style="white-space:pre-wrap">Never-married </span></td>
+<td><span style="white-space:pre-wrap">Adm-clerical </span></td>
+<td>Not-in-family</td>
+<td>White</td>
+<td><span style="white-space:pre-wrap">Male </span></td>
+<td>2174</td>
+<td>0</td>
+<td>40</td>
+<td>United-States</td>
+<td>&lt;=50K</td>
+</tr>
+<tr class="even">
+<td>50</td>
+<td>Self-emp-not-inc</td>
+<td>83311</td>
+<td>Bachelors</td>
+<td>13</td>
+<td>Married-civ-spouse</td>
+<td><span style="white-space:pre-wrap">Exec-managerial </span></td>
+<td><span style="white-space:pre-wrap">Husband </span></td>
+<td>White</td>
+<td><span style="white-space:pre-wrap">Male </span></td>
+<td><span style="white-space:pre-wrap"> 0</span></td>
+<td>0</td>
+<td>13</td>
+<td>United-States</td>
+<td>&lt;=50K</td>
+</tr>
+<tr class="odd">
+<td>38</td>
+<td><span style="white-space:pre-wrap">Private </span></td>
+<td>215646</td>
+<td><span style="white-space:pre-wrap">HS-grad </span></td>
+<td>9</td>
+<td><span style="white-space:pre-wrap">Divorced </span></td>
+<td>Handlers-cleaners</td>
+<td>Not-in-family</td>
+<td>White</td>
+<td><span style="white-space:pre-wrap">Male </span></td>
+<td><span style="white-space:pre-wrap"> 0</span></td>
+<td>0</td>
+<td>40</td>
+<td>United-States</td>
+<td>&lt;=50K</td>
+</tr>
+<tr class="even">
+<td>53</td>
+<td><span style="white-space:pre-wrap">Private </span></td>
+<td>234721</td>
+<td><span style="white-space:pre-wrap">11th </span></td>
+<td>7</td>
+<td>Married-civ-spouse</td>
+<td>Handlers-cleaners</td>
+<td><span style="white-space:pre-wrap">Husband </span></td>
+<td>Black</td>
+<td><span style="white-space:pre-wrap">Male </span></td>
+<td><span style="white-space:pre-wrap"> 0</span></td>
+<td>0</td>
+<td>40</td>
+<td>United-States</td>
+<td>&lt;=50K</td>
+</tr>
+<tr class="odd">
+<td>28</td>
+<td><span style="white-space:pre-wrap">Private </span></td>
+<td>338409</td>
+<td>Bachelors</td>
+<td>13</td>
+<td>Married-civ-spouse</td>
+<td><span style="white-space:pre-wrap">Prof-specialty </span></td>
+<td><span style="white-space:pre-wrap">Wife </span></td>
+<td>Black</td>
+<td>Female</td>
+<td><span style="white-space:pre-wrap"> 0</span></td>
+<td>0</td>
+<td>40</td>
+<td><span style="white-space:pre-wrap">Cuba </span></td>
+<td>&lt;=50K</td>
+</tr>
+<tr class="even">
+<td>37</td>
+<td><span style="white-space:pre-wrap">Private </span></td>
+<td>284582</td>
+<td><span style="white-space:pre-wrap">Masters </span></td>
+<td>14</td>
+<td>Married-civ-spouse</td>
+<td><span style="white-space:pre-wrap">Exec-managerial </span></td>
+<td><span style="white-space:pre-wrap">Wife </span></td>
+<td>White</td>
+<td>Female</td>
+<td><span style="white-space:pre-wrap"> 0</span></td>
+<td>0</td>
+<td>40</td>
+<td>United-States</td>
+<td>&lt;=50K</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<section id="table-3.1-loaded-adult-census-income-dataset" class="level4">
+<h4 class="anchored" data-anchor-id="table-3.1-loaded-adult-census-income-dataset">Table 3.1: Loaded Adult Census Income Dataset</h4>
+</section>
+</section>
+<section id="data-wrangling" class="level3">
+<h3 class="anchored" data-anchor-id="data-wrangling">Data Wrangling</h3>
+<p>We will begin by removing missing values from the dataset. Additionally, we will convert the income column into a factor variable to ensure R treats it as a categorical variable. This transformation is crucial for statistical modeling and visualization, especially when income is used as a binary outcome in logistic regression.</p>
+<div id="80b54ae6" class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>income <span class="ot">&lt;-</span> income <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">income =</span> <span class="fu">as.factor</span>(income))</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>income_clean <span class="ot">&lt;-</span> income <span class="sc">%&gt;%</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>()</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(income_clean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>      age         workclass             fnlwgt         education        
+ Min.   :17.00   Length:30162       Min.   :  13769   Length:30162      
+ 1st Qu.:28.00   Class :character   1st Qu.: 117627   Class :character  
+ Median :37.00   Mode  :character   Median : 178425   Mode  :character  
+ Mean   :38.44                      Mean   : 189794                     
+ 3rd Qu.:47.00                      3rd Qu.: 237628                     
+ Max.   :90.00                      Max.   :1484705                     
+ education_num   marital_status      occupation        relationship      
+ Min.   : 1.00   Length:30162       Length:30162       Length:30162      
+ 1st Qu.: 9.00   Class :character   Class :character   Class :character  
+ Median :10.00   Mode  :character   Mode  :character   Mode  :character  
+ Mean   :10.12                                                           
+ 3rd Qu.:13.00                                                           
+ Max.   :16.00                                                           
+     race               sex             capital_gain    capital_loss    
+ Length:30162       Length:30162       Min.   :    0   Min.   :   0.00  
+ Class :character   Class :character   1st Qu.:    0   1st Qu.:   0.00  
+ Mode  :character   Mode  :character   Median :    0   Median :   0.00  
+                                       Mean   : 1092   Mean   :  88.37  
+                                       3rd Qu.:    0   3rd Qu.:   0.00  
+                                       Max.   :99999   Max.   :4356.00  
+ hours_per_week  native_country       income     
+ Min.   : 1.00   Length:30162       &lt;=50K:22654  
+ 1st Qu.:40.00   Class :character   &gt;50K : 7508  
+ Median :40.00   Mode  :character                
+ Mean   :40.93                                   
+ 3rd Qu.:45.00                                   
+ Max.   :99.00                                   </code></pre>
+</div>
+</div>
+<section id="table-3.2-summary-of-cleaned-adult-income-dataset" class="level4">
+<h4 class="anchored" data-anchor-id="table-3.2-summary-of-cleaned-adult-income-dataset">Table 3.2: Summary of Cleaned Adult Income Dataset</h4>
+<p>After removing missing values, we randomly sample 10% of the data (which contains a total of 32,561 observations) for efficiency. The sample is then split into training and testing sets (80-20 split) for prediction analysis.</p>
+<div id="2a3f257b" class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>sample_size <span class="ot">&lt;-</span> <span class="fl">0.1</span><span class="sc">*</span><span class="fu">nrow</span>(income_clean)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>income_sample <span class="ot">&lt;-</span> income_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample_n</span>(<span class="at">size =</span> sample_size)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>train_indices <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(income_sample)), <span class="at">size =</span> <span class="fl">0.8</span> <span class="sc">*</span> <span class="fu">nrow</span>(income_sample))</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>train_data <span class="ot">&lt;-</span> income_sample[train_indices, ]</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> income_sample[<span class="sc">-</span>train_indices, ]</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(train_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>A tibble: 6 × 15</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" scope="col">age</th>
+<th data-quarto-table-cell-role="th" scope="col">workclass</th>
+<th data-quarto-table-cell-role="th" scope="col">fnlwgt</th>
+<th data-quarto-table-cell-role="th" scope="col">education</th>
+<th data-quarto-table-cell-role="th" scope="col">education_num</th>
+<th data-quarto-table-cell-role="th" scope="col">marital_status</th>
+<th data-quarto-table-cell-role="th" scope="col">occupation</th>
+<th data-quarto-table-cell-role="th" scope="col">relationship</th>
+<th data-quarto-table-cell-role="th" scope="col">race</th>
+<th data-quarto-table-cell-role="th" scope="col">sex</th>
+<th data-quarto-table-cell-role="th" scope="col">capital_gain</th>
+<th data-quarto-table-cell-role="th" scope="col">capital_loss</th>
+<th data-quarto-table-cell-role="th" scope="col">hours_per_week</th>
+<th data-quarto-table-cell-role="th" scope="col">native_country</th>
+<th data-quarto-table-cell-role="th" scope="col">income</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;fct&gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>46</td>
+<td>Private</td>
+<td>155654</td>
+<td><span style="white-space:pre-wrap">HS-grad </span></td>
+<td>9</td>
+<td>Married-civ-spouse</td>
+<td><span style="white-space:pre-wrap">Other-service </span></td>
+<td><span style="white-space:pre-wrap">Wife </span></td>
+<td>White</td>
+<td>Female</td>
+<td><span style="white-space:pre-wrap"> 0</span></td>
+<td>0</td>
+<td>40</td>
+<td>United-States</td>
+<td>&lt;=50K</td>
+</tr>
+<tr class="even">
+<td>22</td>
+<td>Private</td>
+<td>145964</td>
+<td><span style="white-space:pre-wrap">Bachelors </span></td>
+<td>13</td>
+<td><span style="white-space:pre-wrap">Never-married </span></td>
+<td><span style="white-space:pre-wrap">Sales </span></td>
+<td>Own-child</td>
+<td>White</td>
+<td><span style="white-space:pre-wrap">Male </span></td>
+<td><span style="white-space:pre-wrap"> 0</span></td>
+<td>0</td>
+<td>40</td>
+<td>United-States</td>
+<td>&lt;=50K</td>
+</tr>
+<tr class="odd">
+<td>59</td>
+<td>Private</td>
+<td>31137</td>
+<td><span style="white-space:pre-wrap">HS-grad </span></td>
+<td>9</td>
+<td>Married-civ-spouse</td>
+<td><span style="white-space:pre-wrap">Craft-repair </span></td>
+<td><span style="white-space:pre-wrap">Husband </span></td>
+<td>White</td>
+<td><span style="white-space:pre-wrap">Male </span></td>
+<td><span style="white-space:pre-wrap"> 0</span></td>
+<td>0</td>
+<td>40</td>
+<td>United-States</td>
+<td>&gt;50K</td>
+</tr>
+<tr class="even">
+<td>46</td>
+<td>Private</td>
+<td>360096</td>
+<td><span style="white-space:pre-wrap">Bachelors </span></td>
+<td>13</td>
+<td>Married-civ-spouse</td>
+<td>Exec-managerial</td>
+<td><span style="white-space:pre-wrap">Husband </span></td>
+<td>White</td>
+<td><span style="white-space:pre-wrap">Male </span></td>
+<td>15024</td>
+<td>0</td>
+<td>60</td>
+<td>United-States</td>
+<td>&gt;50K</td>
+</tr>
+<tr class="odd">
+<td>50</td>
+<td>Private</td>
+<td>104501</td>
+<td><span style="white-space:pre-wrap">HS-grad </span></td>
+<td>9</td>
+<td>Married-civ-spouse</td>
+<td><span style="white-space:pre-wrap">Craft-repair </span></td>
+<td><span style="white-space:pre-wrap">Husband </span></td>
+<td>White</td>
+<td><span style="white-space:pre-wrap">Male </span></td>
+<td><span style="white-space:pre-wrap"> 0</span></td>
+<td>0</td>
+<td>40</td>
+<td>United-States</td>
+<td>&gt;50K</td>
+</tr>
+<tr class="even">
+<td>24</td>
+<td>Private</td>
+<td>301199</td>
+<td>Some-college</td>
+<td>10</td>
+<td><span style="white-space:pre-wrap">Never-married </span></td>
+<td><span style="white-space:pre-wrap">Tech-support </span></td>
+<td>Own-child</td>
+<td>White</td>
+<td>Female</td>
+<td><span style="white-space:pre-wrap"> 0</span></td>
+<td>0</td>
+<td>20</td>
+<td>United-States</td>
+<td>&lt;=50K</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="table-3.3-training-set-of-adult-income-sample-data" class="level4">
+<h4 class="anchored" data-anchor-id="table-3.3-training-set-of-adult-income-sample-data">Table 3.3: Training Set of Adult Income Sample Data</h4>
+</section>
+</section>
+<section id="exploratory-data-analysis-and-visualization" class="level3">
+<h3 class="anchored" data-anchor-id="exploratory-data-analysis-and-visualization">Exploratory Data Analysis and Visualization</h3>
+<section id="dropping-variables" class="level4">
+<h4 class="anchored" data-anchor-id="dropping-variables">Dropping Variables:</h4>
+<p>To focus on the most relevant variables, we will exclude columns that do not directly contribute to addressing our research question. Hence, we have retained demographic predictors such as age, education level, and hours worked per week. These predictors were chosen based on both theoretical considerations and empirical evidence from exploratory analyses, which indicate that they have a significant influence on income levels.</p>
+<div id="11d6748a" class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>train_data <span class="ot">&lt;-</span> train_data <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>fnlwgt, <span class="sc">-</span>education, <span class="sc">-</span>relationship, <span class="sc">-</span>workclass, <span class="sc">-</span>capital_gain, <span class="sc">-</span>capital_loss, <span class="sc">-</span>marital_status, <span class="sc">-</span>occupation, <span class="sc">-</span>race, <span class="sc">-</span>sex, <span class="sc">-</span>native_country) </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(train_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>A tibble: 6 × 4</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" scope="col">age</th>
+<th data-quarto-table-cell-role="th" scope="col">education_num</th>
+<th data-quarto-table-cell-role="th" scope="col">hours_per_week</th>
+<th data-quarto-table-cell-role="th" scope="col">income</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;fct&gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>46</td>
+<td>9</td>
+<td>40</td>
+<td>&lt;=50K</td>
+</tr>
+<tr class="even">
+<td>22</td>
+<td>13</td>
+<td>40</td>
+<td>&lt;=50K</td>
+</tr>
+<tr class="odd">
+<td>59</td>
+<td>9</td>
+<td>40</td>
+<td>&gt;50K</td>
+</tr>
+<tr class="even">
+<td>46</td>
+<td>13</td>
+<td>60</td>
+<td>&gt;50K</td>
+</tr>
+<tr class="odd">
+<td>50</td>
+<td>9</td>
+<td>40</td>
+<td>&gt;50K</td>
+</tr>
+<tr class="even">
+<td>24</td>
+<td>10</td>
+<td>20</td>
+<td>&lt;=50K</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="table-3.4-training-set-with-relevant-variables-retained" class="level4">
+<h4 class="anchored" data-anchor-id="table-3.4-training-set-with-relevant-variables-retained">Table 3.4: Training Set with Relevant Variables Retained</h4>
+<p>Next, we create pairwise plots to examine relationships between continuous variables (<code>age</code>, <code>hours_per_week</code>, <code>education_num</code>) and the response variable, as well as associations among the input variables.</p>
+<div id="660acfb5" class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repr.plot.width =</span> <span class="dv">10</span>, <span class="at">repr.plot.height =</span> <span class="dv">8</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>continuous_data <span class="ot">&lt;-</span> train_data <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(age, hours_per_week, education_num)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggpairs</span>(continuous_data) <span class="sc">+</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">15</span>),</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="income-prediction-analysis_files/figure-html/cell-7-output-1.png" width="600" height="480" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="figure-3.1-pairwise-plot-among-continuous-relationships" class="level4">
+<h4 class="anchored" data-anchor-id="figure-3.1-pairwise-plot-among-continuous-relationships">Figure 3.1: Pairwise Plot among Continuous Relationships</h4>
+<p>The pairwise plots show that <code>age</code> is right-skewed, <code>hours_per_week</code> peaks around 40, and <code>education_num</code> has a bimodal distribution. Weak correlations (&lt; 0.6) suggest minimal multicollinearity.</p>
+<p>The following code generates summary tables for continuous variables, with the code computing key summary statistics: mean, standard deviation, median, variance, maximum, and minimum.</p>
+<div id="d7d9fcb1" class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>continuous_summary <span class="ot">&lt;-</span> train_data <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(age, hours_per_week, education_num) <span class="sc">%&gt;%</span>  </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">everything</span>()) <span class="sc">%&gt;%</span>  </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(name) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">sd =</span> <span class="fu">sd</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">median =</span> <span class="fu">median</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">variance =</span> <span class="fu">var</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">max =</span> <span class="fu">max</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">min =</span> <span class="fu">min</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>continuous_summary</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>A tibble: 3 × 7</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" scope="col">name</th>
+<th data-quarto-table-cell-role="th" scope="col">mean</th>
+<th data-quarto-table-cell-role="th" scope="col">sd</th>
+<th data-quarto-table-cell-role="th" scope="col">median</th>
+<th data-quarto-table-cell-role="th" scope="col">variance</th>
+<th data-quarto-table-cell-role="th" scope="col">max</th>
+<th data-quarto-table-cell-role="th" scope="col">min</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>age</td>
+<td>38.19071</td>
+<td>13.399089</td>
+<td>37</td>
+<td>179.535575</td>
+<td>90</td>
+<td>17</td>
+</tr>
+<tr class="even">
+<td>education_num</td>
+<td>10.10945</td>
+<td>2.581007</td>
+<td>10</td>
+<td>6.661595</td>
+<td>16</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>hours_per_week</td>
+<td>40.81633</td>
+<td>11.896025</td>
+<td>40</td>
+<td>141.515403</td>
+<td>99</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="table-3.5-summary-statistics-of-relevant-predictors" class="level4">
+<h4 class="anchored" data-anchor-id="table-3.5-summary-statistics-of-relevant-predictors">Table 3.5: Summary Statistics of Relevant Predictors</h4>
+<p>The summary statistics show that the average <code>age</code> is 38 years (SD = 13.39) with a range of 17 to 90. The average education level (<code>education_num</code>) is 10 years (SD = 2.55), reflecting high school or some college education. For <code>hours_per_week</code>, the average is 40.85 hours (SD = 11.96), with a maximum of 99 hours, indicating some individuals work significantly long hours.</p>
+</section>
+</section>
+<section id="proposed-method-logistic-regression-for-prediction-and-roc-curve-for-model-evaluation" class="level3">
+<h3 class="anchored" data-anchor-id="proposed-method-logistic-regression-for-prediction-and-roc-curve-for-model-evaluation">Proposed Method: Logistic Regression for Prediction and ROC Curve for Model Evaluation</h3>
+<p>Why is Logistic Regression Appropriate?</p>
+<p>Logistic regression is suitable for modeling binary outcomes like income categories (&lt;=50K and &gt;50K). It estimates the probability of an individual falling into a specific category based on predictors, then classifies the predictions based on a threshold.</p>
+<section id="assumptions" class="level4">
+<h4 class="anchored" data-anchor-id="assumptions">Assumptions:</h4>
+<ol type="1">
+<li>Independence of observations.</li>
+<li>No high correlation among predictors.</li>
+<li>A large enough sample size for reliable estimates.</li>
+</ol>
+</section>
+<section id="limitations" class="level4">
+<h4 class="anchored" data-anchor-id="limitations">Limitations:</h4>
+<ol type="1">
+<li>Potential underfitting if too little predictors are included.</li>
+</ol>
+</section>
+</section>
+<section id="fit-the-logistic-regression-model" class="level3">
+<h3 class="anchored" data-anchor-id="fit-the-logistic-regression-model">Fit the Logistic Regression Model</h3>
+<p>In the following code, we fit the logistic regression model to the training sample using the relevant predictors.</p>
+<div id="cc5b95eb" class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>selected_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"age"</span>, </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"education_num"</span>, </span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"hours_per_week"</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>formula_reduced <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(<span class="fu">paste</span>(<span class="st">"income ~"</span>, <span class="fu">paste</span>(selected_vars, <span class="at">collapse =</span> <span class="st">" + "</span>)))</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>full_model <span class="ot">&lt;-</span> <span class="fu">glm</span>(formula_reduced, <span class="at">data =</span> train_data, <span class="at">family =</span> binomial)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(full_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>
+Call:
+glm(formula = formula_reduced, family = binomial, data = train_data)
+
+Coefficients:
+                Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)    -8.393132   0.400533 -20.955   &lt;2e-16 ***
+age             0.045404   0.004242  10.704   &lt;2e-16 ***
+education_num   0.341450   0.023747  14.379   &lt;2e-16 ***
+hours_per_week  0.042833   0.004891   8.758   &lt;2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 2695  on 2411  degrees of freedom
+Residual deviance: 2180  on 2408  degrees of freedom
+AIC: 2188
+
+Number of Fisher Scoring iterations: 5</code></pre>
+</div>
+</div>
+<section id="table-3.6-summary-of-the-logistic-regression-model" class="level4">
+<h4 class="anchored" data-anchor-id="table-3.6-summary-of-the-logistic-regression-model">Table 3.6: Summary of the Logistic Regression Model</h4>
+</section>
+</section>
+<section id="visualizing-the-roc-curve" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-the-roc-curve">Visualizing the ROC Curve</h3>
+<p>To evaluate the model, we will use the ROC curve to visualize the trade-off between sensitivity and specificity across classification thresholds. The AUC (Area Under the Curve) will be calculated to quantify model performance, with values closer to 1 indicating strong discrimination and values near 0.5 suggesting random guessing.</p>
+<div id="15e2f77e" class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>actual_classes <span class="ot">&lt;-</span> train_data<span class="sc">$</span>income</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>predicted_probs <span class="ot">&lt;-</span> <span class="fu">predict</span>(full_model, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>roc_curve <span class="ot">&lt;-</span> <span class="fu">roc</span>(actual_classes, predicted_probs)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(roc_curve, <span class="at">main =</span> <span class="st">"ROC Curve of Full Model"</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>auc_value <span class="ot">&lt;-</span> <span class="fu">auc</span>(roc_curve)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(auc_value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Setting levels: control = &lt;=50K, case = &gt;50K
+
+Setting direction: controls &lt; cases
+</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Area under the curve: 0.7965</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="income-prediction-analysis_files/figure-html/cell-10-output-3.png" width="600" height="480" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="figure-3.2-roc-curve-of-the-logistic-regression-model" class="level4">
+<h4 class="anchored" data-anchor-id="figure-3.2-roc-curve-of-the-logistic-regression-model">Figure 3.2: ROC Curve of the Logistic Regression Model</h4>
+<p>The AUC (Area Under the Curve) values obtained for the model (0.7965) is significantly above 0.5, indicating that the model perform much better than random guessing. The high AUC value suggests that the model has strong discriminatory power, effectively distinguishing between individuals earning <code>&lt;=50K</code> and <code>&gt;50K</code> based on the selected predictors.</p>
+</section>
+</section>
+<section id="test-the-model-on-the-testing-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="test-the-model-on-the-testing-dataset">Test the Model on the Testing Dataset</h3>
+<p>Now, we perform the classification analysis and apply the model to the testing dataset (test_data).</p>
+<div id="c93b335d" class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>test_pred_probs <span class="ot">&lt;-</span> <span class="fu">predict</span>(full_model, <span class="at">newdata =</span> test_data[, <span class="fu">c</span>(<span class="st">"age"</span>, <span class="st">"hours_per_week"</span>, <span class="st">"education_num"</span>)], <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>test_pred_class <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(test_pred_probs <span class="sc">&gt;</span> <span class="fl">0.5</span>, <span class="st">"&gt;50K"</span>, <span class="st">"&lt;=50K"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We then visualize the results of the analysis in a confusion matrix.</p>
+<div id="66650e3b" class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>confusion_matrix <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="at">Predicted =</span> test_pred_class, <span class="at">Actual =</span> test_data<span class="sc">$</span>income)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>conf_mat_df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(confusion_matrix)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(conf_mat_df) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Actual"</span>, <span class="st">"Predicted"</span>, <span class="st">"Freq"</span>)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(conf_mat_df, <span class="fu">aes</span>(<span class="at">x =</span> Predicted, <span class="at">y =</span> Actual, <span class="at">fill =</span> Freq)) <span class="sc">+</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_tile</span>() <span class="sc">+</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> Freq), <span class="at">color =</span> <span class="st">"white"</span>, <span class="at">size =</span> <span class="dv">6</span>) <span class="sc">+</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradient</span>(<span class="at">low =</span> <span class="st">"lightblue"</span>, <span class="at">high =</span> <span class="st">"darkblue"</span>) <span class="sc">+</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Confusion Matrix"</span>,</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Predicted Class"</span>,</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Actual Class"</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="income-prediction-analysis_files/figure-html/cell-12-output-1.png" width="600" height="480" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="figure-3.3-confusion-matrix-of-full-model-on-testing-set" class="level4">
+<h4 class="anchored" data-anchor-id="figure-3.3-confusion-matrix-of-full-model-on-testing-set">Figure 3.3: Confusion Matrix of Full Model on Testing Set</h4>
+</section>
+</section>
+<section id="classification-results-and-model-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="classification-results-and-model-metrics">Classification Results and Model Metrics</h3>
+<ul>
+<li><strong>True Positives (TP):</strong> 40 predicted &gt;50K correctly.</li>
+<li><strong>True Negatives (TN):</strong> 428 predicted &lt;=50K correctly.</li>
+<li><strong>False Positives (FP):</strong> 110 predicted &gt;50K incorrectly.</li>
+<li><strong>False Negatives (FN):</strong> 26 predicted &lt;=50K incorrectly.</li>
+</ul>
+<div id="028f0e5c" class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Confusion matrix values</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>TP <span class="ot">&lt;-</span> <span class="dv">40</span>  <span class="co"># True Positives</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>TN <span class="ot">&lt;-</span> <span class="dv">428</span>  <span class="co"># True Negatives</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>FP <span class="ot">&lt;-</span> <span class="dv">110</span>  <span class="co"># False Positives</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>FN <span class="ot">&lt;-</span> <span class="dv">26</span>  <span class="co"># False Negatives</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> TP <span class="sc">+</span> TN <span class="sc">+</span> FP <span class="sc">+</span> FN  <span class="co"># Total observations</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Sensitivity (SN)</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>sensitivity <span class="ot">&lt;-</span> TP <span class="sc">/</span> (TP <span class="sc">+</span> FN)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Specificity (SP)</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>specificity <span class="ot">&lt;-</span> TN <span class="sc">/</span> (TN <span class="sc">+</span> FP)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Precision (PR)</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>precision <span class="ot">&lt;-</span> TP <span class="sc">/</span> (TP <span class="sc">+</span> FP)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Accuracy (ACC)</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>accuracy <span class="ot">&lt;-</span> (TP <span class="sc">+</span> TN) <span class="sc">/</span> n</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Cohen's Kappa (κ)</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>observed_accuracy <span class="ot">&lt;-</span> (TP <span class="sc">+</span> TN) <span class="sc">/</span> n</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>expected_accuracy <span class="ot">&lt;-</span> ((TP <span class="sc">+</span> FP) <span class="sc">/</span> n) <span class="sc">*</span> ((TP <span class="sc">+</span> FN) <span class="sc">/</span> n) <span class="sc">+</span> ((TN <span class="sc">+</span> FP) <span class="sc">/</span> n) <span class="sc">*</span> ((TN <span class="sc">+</span> FN) <span class="sc">/</span> n)</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>kappa <span class="ot">&lt;-</span> (observed_accuracy <span class="sc">-</span> expected_accuracy) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> expected_accuracy)</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>metrics_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">Metric =</span> <span class="fu">c</span>(<span class="st">"Sensitivity"</span>, <span class="st">"Specificity"</span>, <span class="st">"Precision"</span>, <span class="st">"Accuracy"</span>, <span class="st">"Cohen's Kappa"</span>),</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">Value  =</span> <span class="fu">c</span>(sensitivity, specificity, precision, accuracy, kappa)</span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>metrics_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>A data.frame: 5 × 2</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" scope="col">Metric</th>
+<th data-quarto-table-cell-role="th" scope="col">Value</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sensitivity</td>
+<td>0.6060606</td>
+</tr>
+<tr class="even">
+<td>Specificity</td>
+<td>0.7955390</td>
+</tr>
+<tr class="odd">
+<td>Precision</td>
+<td>0.2666667</td>
+</tr>
+<tr class="even">
+<td>Accuracy</td>
+<td>0.7748344</td>
+</tr>
+<tr class="odd">
+<td>Cohen's Kappa</td>
+<td>0.2577171</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<section id="table-3.7-summary-of-model-evaluation-metrics" class="level4">
+<h4 class="anchored" data-anchor-id="table-3.7-summary-of-model-evaluation-metrics">Table 3.7: Summary of Model Evaluation Metrics</h4>
+<ol type="1">
+<li><strong>Sensitivity (SN): 0.61</strong> - The model correctly identifies 61% of higher-income individuals.</li>
+<li><strong>Specificity (SP): 0.80</strong> - 80% of lower-income individuals are correctly classified.</li>
+<li><strong>Precision (PR): 0.27</strong> - 27% of predicted &gt;50K individuals actually earn &gt;50K, indicating many false positives.</li>
+<li><strong>Accuracy (ACC): 0.77</strong> - 77% of overall predictions are correct.</li>
+<li><strong>Cohen’s Kappa (κ): 0.26</strong> - Moderate agreement, better than random chance but room for improvement.</li>
+</ol>
+</section>
+</section>
+<section id="interpretation" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation">Interpretation</h3>
+<ul>
+<li>Strong specificity, but moderate sensitivity and low precision suggest improvements in identifying high-income individuals.</li>
+<li>High accuracy reflects solid overall performance but overlooks class imbalance.</li>
+<li>Moderate Cohen’s Kappa indicates the need for refinement to improve consistency.</li>
+</ul>
+</section>
+</section>
+<section id="discussion" class="level2">
+<h2 class="anchored" data-anchor-id="discussion">(4) Discussion</h2>
+<section id="summary-of-findings-and-implications" class="level4">
+<h4 class="anchored" data-anchor-id="summary-of-findings-and-implications">Summary of Findings and Implications</h4>
+<ul>
+<li>The logistic regression model showed strong predictive power (AUC = 0.7965), demonstrating that the model can effectively distinguish income levels better than a baseline.</li>
+<li>These findings can inform policies aimed at reducing income inequality. Education and hours worked were key predictors, emphasizing the need for skill development and work-life balance.</li>
+<li>Understanding the factors behind income disparities can help individuals make more informed career decisions and pursue opportunities for skill enhancement.</li>
+</ul>
+</section>
+<section id="expectations-and-results" class="level4">
+<h4 class="anchored" data-anchor-id="expectations-and-results">Expectations and Results</h4>
+<ul>
+<li>The model’s AUC (0.7965) is strong, reflecting the importance of predictors like age, education, and hours worked. Overall, the results are consistent with expectations from the research study:
+<ul>
+<li><strong>Age</strong> correlates with experience, leading to higher salaries.</li>
+<li><strong>Education</strong> increases income, with those holding a degree earning significantly more.</li>
+<li><strong>Hours Worked</strong> reflects labor input, where more hours can translate to higher pay.</li>
+</ul></li>
+</ul>
+</section>
+<section id="future-research" class="level4">
+<h4 class="anchored" data-anchor-id="future-research">Future Research</h4>
+<ul>
+<li><strong>Geographic Influence on Income:</strong> Including geographic variables may reveal regional disparities in income linked to education and job opportunities.</li>
+<li><strong>Intersectionality of Demographics:</strong> Exploring how race, gender, and marital status interact could improve the model’s accuracy in predicting income.</li>
+<li><strong>Health and Disability Status:</strong> Accounting for health conditions or disability could provide additional insight into income disparities by limiting education or work opportunities.</li>
+</ul>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">(5) References</h2>
+<ol type="1">
+<li><p><strong>Azzollini, L., Breen, R., &amp; Nolan, B. (2023).</strong><br>
+<em>Demographic behaviour and earnings inequality across OECD countries.</em><br>
+Journal of Economic Inequality, 21, 441-461.<br>
+<a href="https://doi.org/10.1007/s10888-022-09559-1">https://doi.org/10.1007/s10888-022-09559-1</a></p></li>
+<li><p><strong>Jo, K. (2023).</strong><br>
+<em>Income Prediction Using Machine Learning Techniques.</em><br>
+University of California, Los Angeles.</p></li>
+<li><p><strong>Kohavi, R., &amp; Becker, B. (1996).</strong><br>
+UCI Machine Learning Repository: Adult Data Set.<br>
+Retrieved from <a href="https://archive.ics.uci.edu/ml/datasets/adult">https://archive.ics.uci.edu/ml/datasets/adult</a></p></li>
+<li><p><strong>Smith-Edgell, A. (2024a, September 24).</strong><br>
+<em>Proof point: Financial returns after a post-secondary education have diminished.</em><br>
+RBC Thought Leadership.<br>
+<a href="https://thoughtleadership.rbc.com/proof-point-financial-returns-after-a-post-secondary-education-have-diminished/#:~:text=Incomes%20are%20positively%20correlated%20with%20higher%20education&amp;text=Respondents%20with%20a%20bachelor’s%20degree,median%20income%20in%20the%20sample.">https://thoughtleadership.rbc.com/proof-point-financial-returns-after-a-post-secondary-education-have-diminished</a></p></li>
+</ol>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
