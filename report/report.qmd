@@ -1,0 +1,20 @@
+---
+title: "U.S. Adult Census: Income Prediction with Logistic Regressiona"
+author: "- Benjamin Gerochi
+- Izzy Zhou
+- Michael Tham
+- Yui Mikuriya"
+format: 
+    html:
+        toc: true
+        number-sections: true
+        embed-resources: true
+    pdf:
+        toc: true
+        number-sections: true
+bibliography: references.bib
+execute: 
+    echo: false
+    warning: false
+editor: source
+---
