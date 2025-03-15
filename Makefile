@@ -71,15 +71,15 @@ index.html: report/report.qmd analysis/output/eda_plot.png analysis/output/final
 	mv report/report.html docs/index.html
 =======
 all:
-	# Run the full pipeline
+	make analysis/data/census+income/adult.data
 	make analysis/data/clean_data.csv
 	make analysis/output/final_model.rds
 	make analysis/output/eda_summary.txt
 	make clean
 	make index.html
 
-analysis/data/census+income/adult.data: source/01-download_data.R
-	Rscript source/01-download_data.R --output_file=analysis/data/census+income/adult.data
+analysis/data/adult.data: source/01-download_data.R
+	Rscript source/01-download_data.R --url="https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data" --output="analysis/data/census+income/adult.data"
 
 analysis/data/clean_data.csv: source/02-clean_data.R analysis/data/census+income/adult.data
 	Rscript source/02-clean_data.R --input_file=analysis/data/census+income/adult.data --output_file=analysis/data/clean_data.csv
