@@ -14,7 +14,7 @@ library(readr)
 
 doc <- docopt("s
 Usage:
-  0-model.R --input=<input> --output=<output>
+  04-model.R --input=<input> --output=<output>
 ")
 
 data <- read.csv(doc$input)
