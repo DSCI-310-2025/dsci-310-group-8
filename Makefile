@@ -41,5 +41,5 @@ report:
 clean:
 	rm -f analysis/output/*
 	rm -f analysis/data/clean/*
-	rm -f index.html
+	rm -f docs/*
 	rm -f *.pdf

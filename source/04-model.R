@@ -8,9 +8,14 @@ Options:
   --output=<output> Path to save model results.
 "
 
+if (!requireNamespace("caret", quietly = TRUE)) {
+  install.packages("caret", repos = "https://cloud.r-project.org")
+}
+
 library(docopt)
 library(caret)
 library(readr)
+library(tidyverse)
 
 doc <- docopt("s
 Usage:
@@ -18,6 +23,14 @@ Usage:
 ")
 
 data <- read.csv(doc$input)
+message("Columns in dataset: ", paste(colnames(data), collapse = ", "))
+
+if (!"income" %in% colnames(data)) {
+  stop("Error: 'income' column is missing in the dataset.")
+}
+data <- data |>
+  mutate(income = ifelse(income == ">50K", 1, 0))
+
 model <- glm(income ~ ., data = data, family = binomial)
 saveRDS(model, doc$output)
 message("Model trained successfully.")
