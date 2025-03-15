@@ -42,4 +42,3 @@ clean:
 	rm -f analysis/output/*
 	rm -f analysis/data/clean/*
 	rm -f docs/*
-	rm -f *.pdf
