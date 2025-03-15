@@ -17,7 +17,15 @@ Usage:
   02_clean_data.R --input=<input> --output=<output>
 ")
 
+
 data <- read.csv(doc$input, na.strings = "?")
+
+print("Column names in dataset:")
+print(colnames(data))
+
+if (!"income" %in% colnames(data)) {
+  stop("Error: The dataset does not contain an 'income' column.")
+}
 data <- na.omit(data)
 data$income <- as.factor(data$income)
 
