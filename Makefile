@@ -45,31 +45,6 @@
 
 .PHONY: all clean report
 
-<<<<<<< HEAD
-all: analysis/data/clean_data.csv analysis/output/eda_plot.png analysis/output/final_model.rds index.html
-
-analysis/data:
-	mkdir -p analysis/data
-
-analysis/output:
-	mkdir -p analysis/output
-
-docs:
-	mkdir -p docs
-
-analysis/data/clean_data.csv: source/02-clean_data.R analysis/data/census+income/adult.data
-	Rscript source/02-clean_data.R --input=analysis/data/census+income/adult.data --output=analysis/data/clean_data.csv
-
-analysis/output/eda_plot.png: source/03-eda.R analysis/data/clean_data.csv
-	Rscript source/03-eda.R --input=analysis/data/clean_data.csv --output=analysis/output/eda_plot.png
-
-analysis/output/final_model.rds: source/04-model.R analysis/data/clean_data.csv
-	Rscript source/04-model.R --input=analysis/data/clean_data.csv --output=analysis/output/final_model.rds
-
-index.html: report/report.qmd analysis/output/eda_plot.png analysis/output/final_model.rds docs
-	quarto render report/report.qmd --to html
-	mv report/report.html docs/index.html
-=======
 all:
 	make analysis/data/census+income/adult.data
 	make analysis/data/clean_data.csv
@@ -98,7 +73,6 @@ docs/index.html: analysis/report/report.qmd analysis/output/eda_summary.txt anal
 
 report:
 	make index.html
->>>>>>> 78783fb (initial makefile)
 
 clean:
 	rm -f analysis/output/*

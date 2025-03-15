@@ -1,9 +1,43 @@
+# "
+# Script to clean and preprocess the dataset.
+# Usage:
+#   02_clean_data.R --input=<input> --output=<output>
+
+# Options:
+#   --input=<input>   Path to raw dataset.
+#   --output=<output> Path to save cleaned dataset.
+# "
+
+# library(docopt)
+# library(dplyr)
+# library(readr)
+
+# doc <- docopt("
+# Usage:
+#   02_clean_data.R --input=<input> --output=<output>
+# ")
+
+# data <- read.csv(doc$input, na.strings = "?")
+# data <- na.omit(data)
+
+# if (!"income" %in% colnames(data)) {
+#   stop("Error: The dataset does not contain an 'income' column.")
+# }
+
+# if (nrow(data) == 0) {
+#   stop("Error: All rows were removed after cleaning. Check the dataset for missing values.")
+# }
+
+# data$income <- as.factor(data$income)
+
+# write.csv(data, doc$output, row.names = FALSE)
+# message("Dataset cleaned successfully.")
+
 "
 Script to clean and preprocess the dataset.
 Usage:
   02-clean_data.R --input=<input> --output=<output>
-=======
-"
+
 Options:
   --input=<input>   Path to raw dataset.
   --output=<output> Path to save cleaned dataset.
@@ -13,6 +47,7 @@ library(dplyr)
 library(readr)
 
 doc <- docopt("
+Usage:
   02-clean_data.R --input=<input> --output=<output>
 ")
 
@@ -45,5 +80,6 @@ if (!"income" %in% colnames(data)) {
 
 data$income <- as.factor(data$income)
 
+# Save cleaned data
 write.csv(data, doc$output, row.names = FALSE)
 message("Dataset cleaned successfully.")
