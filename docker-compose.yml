@@ -1,11 +1,16 @@
 services:
   rstudio:
     image: zx2yizzy/dsci-310-group-8-project-docker:latest
-    platform: linux/amd64  # Add this for Apple Silicon compatibility
+    platform: linux/amd64  # For Apple Silicon compatibility
     ports:
       - "8787:8787"
     environment:
       - PASSWORD=group8
       - USER=rstudio
+      - RENV_PATHS_CACHE=/home/rstudio/.renv/cache
     volumes:
       - .:/home/rstudio/project
+      - renv_cache:/home/rstudio/.renv/cache
+
+volumes:
+  renv_cache:

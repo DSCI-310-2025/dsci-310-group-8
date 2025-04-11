@@ -51,9 +51,6 @@ index.html: report/report.qmd results/eda/pairwise_plot.png results/model/roc_pl
 test:
 	Rscript -e "testthat::test_dir('tests/testthat')"
 
-test:
-	Rscript -e "testthat::test_dir('tests/testthat')"
-
 clean:
 	rm -rf docs
 	rm -rf results/eda

@@ -80,11 +80,14 @@ The following dependencies are required to run the analysis:
 - repr
 - pROC
 - GGally
+- infer
+- incomepredictability (our custom package)
 ```
+For more details about the custom package, see the incomepredictability repository: https://github.com/DSCI-310-2025/incomepredictability 
 
 # Docker Container Setup
 
-This project uses Docker to ensure a consistent and reproducible computational environment. The Docker image contains all necessary R packages and dependencies to run the analysis.
+This project uses Docker to ensure a consistent and reproducible computational environment. The Docker image contains all necessary R packages and dependencies to run the analysis, including our custom `incomepredictability` package.
 
 Before using the Docker, please ensure the Docker Desktop application runs in the background.
 

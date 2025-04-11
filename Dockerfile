@@ -51,6 +51,12 @@ RUN Rscript -e "\
 # Verify installations
 RUN Rscript -e "installed.packages()[,'Package']"
 
+# Install incomepredictability package from GitHub
+RUN Rscript -e "remotes::install_github('DSCI-310-2025/incomepredictability', ref = 'main')"
+
+# Create a global .Renviron file to disable renv autoloader for all users
+RUN echo 'RENV_CONFIG_AUTOLOADER_ENABLED=FALSE' >> /usr/local/lib/R/etc/Renviron
+
 # Expose port 8787 for RStudio
 EXPOSE 8787
 
